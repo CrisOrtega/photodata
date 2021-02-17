@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class debug:
+class Debug:
     def __init__(self,script,file=None):
         ### Constructor of the debug class. file will be optional. If defined, debug will be writen to a file
         ### In case it is not defined, it will be just printed
