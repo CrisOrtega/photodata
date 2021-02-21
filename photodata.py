@@ -2,15 +2,24 @@ import config
 import sys
 import os
 import re
-from PIL import Image
-from PIL.ExifTags import TAGS
+import csv
+import various
+
 from debug import Debug
-from datetime import datetime
+from camerashot import CameraShot
+
 
 # Function to go over the folder tree in order to look for images
 # Supported formats: config.supported_formats
 # attributes: path, supported_formats, file(CSV)
 def walk_photo_folder(path,file,dbg=None):
+
+    #open file csv (it will remains open)
+    # and declare writer
+    filehandle=open(file,'w',newline='')
+    writer = csv.DictWriter(filehandle, fieldnames=config.ExifDict.keys(),delimiter=';')
+    writer.writeheader()
+
     for root, dirs, files in os.walk(path):
         # root stores root folder for first iteration
         # dirs stores folders inside the root
@@ -21,8 +30,8 @@ def walk_photo_folder(path,file,dbg=None):
         for f in files:
             dbg.msg('read', 'file', os.path.basename(root),1,f)
             extension=r"(^.+)\.(\w+)$"
-            result=re.findall(extension,f)
-            name_file_tuple=result[0]
+            result=re.search(extension,f)
+            name_file_tuple=(result[1],result[2])
             if len(name_file_tuple) != 2:
                 dbg.msg('warning', 'extension', 'not supported',2, f,'Not a file?',"lenght:"+
                         str(len(name_file_tuple)))
@@ -31,33 +40,85 @@ def walk_photo_folder(path,file,dbg=None):
             else:
 
                 # path to the image or video
-                imagename = os.path.join(root,f)
-                print(imagename)
+                try:
+                    imagename = os.path.join(root,f)
+                    shot = CameraShot(imagename)
+                    shot.load_exif()
+                except IOError as e:
+                    dbg.msg('ERROR', 'file', 'opening', 3, e, root, f, name_target)
 
-                creation_timestamp = os.path.getctime(imagename)
-                modification_timestamp = os.path.getmtime(imagename)
-                dt_creation = datetime.fromtimestamp(creation_timestamp).strftime('%Y:%m:%d %H:%M:%S')
-                dt_modification = datetime.fromtimestamp(modification_timestamp).strftime('%Y:%m:%d %H:%M:%S')
-                print("dt_creation =", dt_creation)
-                print("dt_modification =", dt_modification)
+                datecapture=''
+                # In case we are going to correct the file and the file has an incorrect name
+                # START renaming routine
+                if config.correct_name == True and re.search(config.name_pattern, name_file_tuple[0]) == None:
+                    datecapture=shot.determine_shotdate()
+                    if (datecapture != None):
+                        # We will change the name from f to name_target
+                        name_target="{}{}{}_{}{}{}.{}".format(datecapture[0:4],datecapture[5:7],datecapture[8:10],
+                                                          datecapture[11:13],datecapture[14:16],datecapture[17:19],
+                                                          name_file_tuple[1])
+                        i=1
+                        while (os.path.exists(os.path.join(root,name_target))):
+                            i+=1
+                            name_target = "{}{}{}_{}{}{}_{}.{}".format(datecapture[0:4], datecapture[5:7],
+                                                                    datecapture[8:10],
+                                                                    datecapture[11:13], datecapture[14:16],
+                                                                    datecapture[17:19],str(i),
+                                                                    name_file_tuple[1])
+                        if (os.path.exists(os.path.join(root,f)) and
+                                not os.path.exists(os.path.join(root,name_target))):
+                            dbg.msg('write', 'file', 'renaming', 2, root, f,name_target)
+                            try:
+                                os.rename(os.path.join(root,f),os.path.join(root,name_target))
+                            except IOError as e:
+                                dbg.msg('ERROR', 'file', 'renaming', 3, e, root, f, name_target)
+                                sys.exit(1)
+                        else:
+                            dbg.msg('ERROR', 'file', 'renaming process error', 3, root, f,name_target)
+                            sys.exit(1)
 
-                # read the image data using PIL
-                image = Image.open(imagename)
-                # extract EXIF data
-                exifdata = image.getexif()
-                # iterating over all EXIF data fields
-                ## BETTER TAKE THIS TO A CLASS ...
-                for tag_id in exifdata:
-                    # get the tag name, instead of human unreadable tag id
-                    tag = TAGS.get(tag_id, tag_id)
-                    data = exifdata.get(tag_id)
-                    # decode bytes
-                    if isinstance(data, bytes):
-                        try:
-                            data = data.decode()
-                        except:
-                            data=''
-                    print(f"{tag:25}: {data}")
+                    else:
+                        dbg.msg('warning', 'file', 'no valid date', 2, root,f)
+                # END renaming routine
+
+
+                # Now, I build a dictionary for all images
+                dict={}
+                # Create dict
+
+                for item in config.ExifDict.keys():
+                    if item == 'Path':
+                        dict[item] = various.latin1_to_ascii(root)
+                        continue
+                    if item == 'Name':
+                        dict[item] = f
+                        continue
+                    # Write date
+                    if item == 'DateTime':
+                        dict[item] = datecapture
+                        continue
+                    # Fill fields and convert
+                    for exifpointer in config.ExifDict[item]:
+                        if exifpointer in shot.exifdata.keys():
+                            if str(shot.exifdata[exifpointer]).strip not in ('',None):
+                                dict[item]=str(shot.exifdata[exifpointer]).strip()
+                                break
+                            else:
+                                dict[item]='NA'
+                        else:
+                            dict[item] = 'NA'
+
+                # file for data is already open. Use 'writer' to write
+                #append line
+                writer.writerow(dict)
+
+
+    #close csv file
+    filehandle.close()
+
+
+
+
                 ## is the name correct? autocorrect name? then correct name
                 ## Prepare record and append in the file
 
