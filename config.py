@@ -1,8 +1,6 @@
 
 # This file is to store the config variables used in the script
 
-
-
 # Suported_formats by the script
 supported_formats = ('jpg','jpeg')
 
@@ -18,7 +16,7 @@ PATH = r'C:\Users\Cristóbal Ortega\Desktop\fotos'
 # Reports to produce
 reports=[
     {'file':'all_photos.csv', 'subpath':'ALBUM FINAL'},
-    {'file':'instagram.csv', 'subpath':'_instagram\projects'}
+    {'file':'instagram.csv', 'subpath':'_instagram\_projects'}
 ]
 
 # Date/file name pattern expected.

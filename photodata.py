@@ -1,10 +1,10 @@
-import config
 import sys
 import os
 import re
 import csv
-import various
 
+import config
+import various
 from debug import Debug
 from camerashot import CameraShot
 
@@ -41,7 +41,7 @@ def create_report(path,file,dbg=None):
                 dbg.msg('warning', 'extension', 'not supported',2, f,'Not a file?',"lenght:"+
                         str(len(name_file_tuple)))
             elif name_file_tuple[1].lower() not in config.supported_formats:
-                dbg.msg('warning', 'extension', 'not supported', 2, f,'extension not supported:'+name_file_tuple[1])
+                dbg.msg('warning', 'extension', 'not supported', 1, f,'extension not supported:'+name_file_tuple[1])
             else:
 
                 # path to the image or video
@@ -81,13 +81,15 @@ def create_report(path,file,dbg=None):
                         else:
                             dict[item] = ''
                 makermodel = "{}::{}".format(dict["Maker"], dict["Model"])
-                if (dict['FocalLengthIn35mmFilm']=='' and dict['FocalLength'] != '' and
-                        makermodel in config.conversion_to_35mm.keys()):
-                    try:
-                        dict['FocalLengthIn35mmFilm']=round(float(dict['FocalLength'])
+                if dict['FocalLengthIn35mmFilm']=='' and dict['FocalLength'] != '' :
+                    if makermodel in config.conversion_to_35mm.keys():
+                        try:
+                            dict['FocalLengthIn35mmFilm']=round(float(dict['FocalLength'])
                                                             *float(config.conversion_to_35mm[makermodel]))
-                    except:
-                        dbg.msg('Warning', 'exif', 'wrong coversion', 2, makermodel, dict['FocalLength'])
+                        except:
+                            dbg.msg('Warning', 'exif', 'wrong coversion', 2, makermodel, dict['FocalLength'])
+                    else:
+                        dbg.msg('Warning', 'exif', 'no data coversion', 2, makermodel, dict['FocalLength'])
                 # write in final report
                 final_report[makermodel]=final_report.get(makermodel,0) + 1
 
@@ -121,7 +123,7 @@ def name_correction(path, dbg=None):
                 dbg.msg('warning', 'extension', 'not supported', 2, f, 'Not a file?', "lenght:" +
                             str(len(name_file_tuple)))
             elif name_file_tuple[1].lower() not in config.supported_formats:
-                dbg.msg('warning', 'extension', 'not supported', 2, f,
+                dbg.msg('warning', 'extension', 'not supported', 1, f,
                             'Not the right extension:' + name_file_tuple[1])
             else:
 
@@ -174,6 +176,23 @@ def name_correction(path, dbg=None):
     return True
 
 
+def other_tables(path):
+    if not os.path.exists(path):
+        raise ValueError("PATH: {} not existing".format(path))
+    # File with models
+    #open file csv (it will remains open)
+    # and declare writer
+    file=os.path.join(path,'camera_conversion.csv')
+    filehead={'Model','ConversionRatio'}
+    filehandle=open(file,'w',newline='')
+    writer = csv.DictWriter(filehandle, fieldnames=filehead,delimiter=';')
+    writer.writeheader()
+    values=[]
+    for model,value in config.conversion_to_35mm.items():
+        values.append({'Model':model,'ConversionRatio':value})
+    writer.writerows(values)
+    # close csv file
+    filehandle.close()
 
 def main():
     # We define the debuger
@@ -182,17 +201,18 @@ def main():
 
     dbg.msg('config','path','all_photos',1,config.PATH)
 
-    # output csv
-    output_csv = os.path.join(config.PATH, 'photo_ddbb.csv')
+
     if os.path.exists(config.PATH):
-        dbg.msg('config','file','output_csv',1,output_csv)
+        other_tables(config.PATH)
         if config.correct_name:
             name_correction(config.PATH,dbg)
         for report in config.reports:
             file_report=os.path.join(config.PATH,report['file'])
             subpath=os.path.join(config.PATH,report['subpath'])
-            dbg.msg('report', 'file', 'output_csv', 1, output_csv)
+            dbg.msg('report', 'file', 'output_csv', 1, subpath, file_report)
+            assert os.path.exists(subpath), "{} doesn't exist".format(subpath)
             create_report(subpath,file_report,dbg)
+
     else:
         dbg.msg('config', 'path', 'all_photos', 3, config.PATH)
         raise ValueError("A correct folder needs to be specified")

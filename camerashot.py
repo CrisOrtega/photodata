@@ -3,7 +3,8 @@ from PIL.ExifTags import TAGS
 from datetime import datetime
 import os
 import re
-import config
+
+
 
 class CameraShot:
     def __init__(self,imagename):
@@ -18,6 +19,10 @@ class CameraShot:
         self.exitloaded=True
         # read the image data using PIL
         try:
+            # We can control the decompression image bomb warning
+            # This is a risk, but I assume we are processing our own images
+            #Image.MAX_IMAGE_PIXELS = None
+            Image.MAX_IMAGE_PIXELS = 200000000
             image = Image.open(self.imagename)
             # extract EXIF data
             exifdata = image.getexif()
