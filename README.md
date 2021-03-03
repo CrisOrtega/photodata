@@ -35,6 +35,35 @@ from PIL.ExifTags import TAGS	# To read the Exif data
 
 # Config File
 
+The config is available as variables in the script, as long as config is imported with "import config"
+
+General config
+-------------------
+
+supported_formats = ('jpg','jpeg')
+> This is to identify the image format supported_formats
+
+PATH = r'C:\complete_path'
+Path of the folder with the files. The example is in windows. 
+> It can include spaces and does not need to include / or \ at the end
+
+tags=('DateTimeOriginal','ProcessingSoftware','MaxApertureValue','Fnumber','MeteringMode','Flash','FocalLength',
+      'ExifImageWidth','ExifImageHeight','Saturation','Make','Model','ISOSpeedRatings','FocalLengthIn35mmFilm',
+      'ExposureTime','ExposureBiasValue','Orientation','DateTime')
+> These are the tags to be read
+> If we need these new tags to be included in csv file they need to be included here and also in ExifDict
+
+
+Rename config
+-------------------
+TBC
+
+Report config
+-------------------
+TBC
+
+Extra config
+-------------------
 
 
 # Name change
