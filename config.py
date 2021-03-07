@@ -60,6 +60,7 @@ ExifDict={'Path':[],'Name':[],'DateTime':[],
 # Extra config
 #--------------------------------------
 
+
 # Conversion to 35mm
 # ratio of conversion to 35mm, fill with your used models
 conversion_to_35mm={
