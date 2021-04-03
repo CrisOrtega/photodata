@@ -7,7 +7,7 @@ import config
 import various
 from debug import Debug
 from camerashot import CameraShot
-
+from datetime import datetime
 
 # Function to go over the folder tree in order to look for images
 # Supported formats: config.supported_formats
@@ -73,18 +73,33 @@ def create_report(path, file, dbg=None):
                         continue
                     # Write date
                     if item == 'DateTime':
-                        dict[item] = datecapture
+                        # We will output the date in the format given by the configuration
+                        # we will use this field.
+                        datecapturereport=""
+                        # First we convert datecapture to datetime (if the format is correct)
+                        pattern = r"([1-2]\d{3}:[0-1]\d:[0-3]\d [0-2]\d:[0-6]\d:[0-6]\d)"
+                        res = re.findall(pattern, datecapture)
+                        if res != None:
+                            date_time_obj = datetime.strptime(datecapture, '%Y:%m:%d %H:%M:%S')
+                            # Then we convert it back to datetime with the new format
+                            datecapturereport = \
+                                date_time_obj.strftime(config.date_format_report)
+                        dict[item] = datecapturereport
                         continue
                     # Fill fields and convert
+                    default = ''
+                    if (item == 'Model' or item == 'Maker'):
+                        default = 'Unknown'
+
                     for exifpointer in config.ExifDict[item]:
                         if exifpointer in shot.exifdata.keys():
                             if str(shot.exifdata[exifpointer]).strip not in ('', None):
                                 dict[item] = str(shot.exifdata[exifpointer]).strip()
                                 break
                             else:
-                                dict[item] = ''
+                                dict[item] = default
                         else:
-                            dict[item] = ''
+                            dict[item] = default
                 makermodel = "{}::{}".format(dict["Maker"], dict["Model"])
                 if dict['FocalLengthIn35mmFilm'] == '' and dict['FocalLength'] != '':
                     if makermodel in config.conversion_to_35mm.keys():

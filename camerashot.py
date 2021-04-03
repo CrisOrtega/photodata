@@ -43,6 +43,8 @@ class CameraShot:
             self.exifdata[tag]=data
 
     def determine_shotdate(self):
+        """ This function extract the date of the photo taken. In case the date does not exists,
+        then some calculations are done with the Creation and Modification date"""
         if not self.exitloaded:
             self.load_exif()
         creation_timestamp = os.path.getctime(self.imagename)

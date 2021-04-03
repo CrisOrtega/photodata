@@ -36,6 +36,9 @@ reports=[
     {'file':'instagram.csv', 'subpath':'_instagram\IG_done'}
 ]
 
+# standard
+# date_format_report='%Y:%m:%d %H:%M:%S'
+date_format_report='%Y-%m-%d %H:%M:%S'
 
 # Tags map for the csv file. Path, Name and DateTime are automatically taken
 # The rest of the tags are taken from map.
