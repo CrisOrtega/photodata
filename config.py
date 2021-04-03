@@ -10,7 +10,7 @@ PATH = r'C:\Users\Cristóbal Ortega\Desktop\fotos'
 # Suported_formats by the script
 supported_formats = ('jpg','jpeg')
 
-# Tags readed. Rest of tags are ignored
+# Tags read. Rest of tags are ignored
 # https://exiftool.org/TagNames/EXIF.html
 tags=('DateTimeOriginal','ProcessingSoftware','MaxApertureValue','Fnumber','MeteringMode','Flash','FocalLength',
       'ExifImageWidth','ExifImageHeight','Saturation','Make','Model','ISOSpeedRatings','FocalLengthIn35mmFilm',
@@ -36,7 +36,7 @@ reports=[
     {'file':'instagram.csv', 'subpath':'_instagram\IG_done'}
 ]
 
-# standard
+# Report output date format
 # date_format_report='%Y:%m:%d %H:%M:%S'
 date_format_report='%Y-%m-%d %H:%M:%S'
 

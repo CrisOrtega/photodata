@@ -1,19 +1,22 @@
 # photodata
-This script is used to manage a photo folder in your PC.
+
+
+This script is used to manage a <b>photo folder</b> in your PC.
 It basically makes two things
 
-- The first one is to change the name of the files using a date format. In order to have date format names for the files. This is done through Exif data and creation and modification file.
-- The second one is to create a small (or several) csv files with some stats taken from exif data 
+- It changes the name of the files using a date format (YYYYMMDD_hhmmss). This allow an intuitive sorting of files. It uses Exif data and file dates.
+- It creates a small (or several) csv files with some stats taken from exif data. This can be easily explored with Tableau or PowerBI 
 
 
 
 # how to use it
 
-In order to use the script it is just enough to run it using python. 
+In order to use the script 
 
-C:> python.exe photodata.py
+- Configure all aspects using config.py 
+- Run it with Python: <b>C:> python.exe photodata.py</b>
 
-or you can add a shebang line at the beginning of the script: #!/usr/bin/env python3
+Alternatively, you can add a shebang line at the beginning of the script: #!/usr/bin/env python3
 
 The way to control how the script works is through the config file: config.py
 See the Config File section to see how it can be configured.
@@ -39,24 +42,25 @@ The config is available as variables in the script, as long as config is importe
 General config
 -------------------
 
-supported_formats = ('jpg','jpeg')
-> This is to identify the image format supported_formats
-
 PATH = r'C:\complete_path'
 > Path of the folder with the files. The example is in windows. It is important to modify this
 > It can include spaces and does not need to include / or \ at the end
+
+supported_formats = ('jpg','jpeg')
+> This is to identify the image format supported_formats
 
 tags=('DateTimeOriginal','ProcessingSoftware','MaxApertureValue','Fnumber','MeteringMode','Flash','FocalLength',
       'ExifImageWidth','ExifImageHeight','Saturation','Make','Model','ISOSpeedRatings','FocalLengthIn35mmFilm',
       'ExposureTime','ExposureBiasValue','Orientation','DateTime')
 > These are the tags to be read
 > If we need these new tags to be included in csv file they need to be included here and also in ExifDict
-
+> The rest of Exif tags are ignored
 
 Rename config
 -------------------
 correct_name = True
-> This indicates that the name of the files need to be changed
+> This indicates if the name of the files is going to be changed. 
+> Set to False if you don't want to change the names and you want only to extract a report 
 
 name_pattern='[1-2]\d{3}[0-1]\d[0-3]\d_[0-2]\d[0-6]\d[0-6]\d_*.*'
 > This is the pattern to look in the files. 
@@ -73,6 +77,11 @@ reports=[
 > file: it is the file to be produced at the root level of PATH variables
 > subpath: it is the subfolder that will be analyzed 
 > So, the script read all images in subpath and store the info of them in the file specified in file
+
+date_format_report='%Y-%m-%d %H:%M:%S'
+> This is the output format of the dates in the report.
+> I strongly recommend to format it in a way it can be easily usable by a third party
+> In the example, the date is in a PowerBI format 
 
 ExifDict
 > This variable is a mapping between the report fields to produce and the Exif data
