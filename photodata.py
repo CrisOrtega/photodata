@@ -225,10 +225,18 @@ def draw_report(report,path):
     # sorting the results of the exceptions
     print("Folder stats:")
     print("------------------------------------")
-    print(report['ok'])
+    stats_report={k: v for k, v in sorted(report['ok'].items(), key=lambda item: item[1],reverse=True)}
+    for key,value in stats_report.items():
+        print("{:>40}{:>10}".format(key, value))
     print("Exceptions:")
     print("------------------------------------")
-    print(report['exception'])
+    stats_report = {k: v for k, v in sorted(report['exception'].items(), key=lambda item: item[1],reverse=True)}
+    if len(stats_report)>0:
+        for key, value in stats_report.items():
+            print("{:>40}{:>10}".format(key, value))
+    else:
+        print("No Exceptions")
+
 
 def main():
     # We define the debuger
