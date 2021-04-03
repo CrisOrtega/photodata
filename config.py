@@ -32,7 +32,7 @@ name_pattern='[1-2]\d{3}[0-1]\d[0-3]\d_[0-2]\d[0-6]\d[0-6]\d_*.*'
 
 # Reports to produce
 reports=[
-    {'file':'all_photos.csv', 'subpath':'ALBUM FINAL'},
+    {'file':'all_photos.csv', 'subpath':'_ALBUM FINAL'},
     {'file':'instagram.csv', 'subpath':'_instagram\IG_done'}
 ]
 
